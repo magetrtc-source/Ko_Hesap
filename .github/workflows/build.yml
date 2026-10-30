@@ -8,22 +8,35 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      - name: Create Cordova Project
+        run: |
+          cordova create kopazar com.ko.pazar "KO Pazar"
+          cd kopazar
+          cordova platform add android
+          rm -rf www/*
+          cp ../app/src/main/assets/index.html www/index.html
+
       - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Build with Gradle
+      - name: Build Android APK
         run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          cd kopazar
+          cordova build android --device --debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: KO-Pazar-Uygulamam
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: kopazar/platforms/android/app/build/outputs/apk/debug/app-debug.apk
